@@ -7,8 +7,8 @@ from database import get_db
 from schemas import StudentCreate, StudentResponse
 from models import Student
 
-app = APIRouter(
-    prefix="",
+router = APIRouter(
+    prefix="/students",
     tags=["students"],
 )
 
@@ -20,16 +20,30 @@ app = APIRouter(
 # Update - PUT
 # Delete - DELETE
 
+# Get all students
+@router.get("/", response_model=List[StudentResponse])
+def get_all_students(db:Session = Depends(get_db)):
+    return db.query(Student).all()
+
 # View existing students data
-@app.get("/students/{student_id}", response_model=StudentResponse)
+@router.get("/{student_id}", response_model=StudentResponse)
 def get_student(student_id:int, db:Session = Depends(get_db)):
     stud = db.query(Student).filter(Student.id == student_id).first()
     if not stud:
         raise HTTPException(status_code=404, detail="Student not found!")
     return stud
 
+# Filter students record based on Year and Dept
+@router.get("/students/filter", response_model=List[StudentResponse])
+def get_filter_record(dept:str, year:int, db:Session = Depends(get_db)):
+
+    students = db.query(Student).filter(Student.dept == dept,
+                                        Student.year == year).all()
+    return students
+
+
 # Add new students data
-@app.post("/students/", response_model=StudentResponse)
+@router.post("/", response_model=StudentResponse)
 def create_student(stud: StudentCreate, db:Session = Depends(get_db)):
     if db.query(Student).filter(Student.email == stud.email).first():
         raise HTTPException(status_code=404, detail="Student already exists!")
@@ -42,7 +56,7 @@ def create_student(stud: StudentCreate, db:Session = Depends(get_db)):
     return new_stud
 
 # Update Students data
-@app.put("/students/{student_id}", response_model=StudentResponse)
+@router.put("/{student_id}", response_model=StudentResponse)
 def update_student(student_id:int, student:StudentCreate, db:Session = Depends(get_db)):
     db_stud = db.query(Student).filter(Student.id == student_id).first()
     if not db_stud:
@@ -57,7 +71,7 @@ def update_student(student_id:int, student:StudentCreate, db:Session = Depends(g
 
     
 # Delete Students data
-@app.delete("/students/{student_id}")
+@router.delete("/{student_id}")
 def delete_student(student_id:int, db:Session = Depends(get_db)):
     db_stud = db.query(Student).filter(Student.id == student_id).first()
     if not db_stud:
@@ -66,9 +80,3 @@ def delete_student(student_id:int, db:Session = Depends(get_db)):
     db.delete(db_stud)
     db.commit()
     return {"message":"Student Deleted"}
-
-
-# Get all students
-@app.get("/students/", response_model=List[StudentResponse])
-def get_all_students(db:Session = Depends(get_db)):
-    return db.query(Student).all()

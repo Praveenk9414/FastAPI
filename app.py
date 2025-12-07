@@ -11,4 +11,4 @@ app = FastAPI(title="Integration with sql")
 def root():
     return {"message": "FastAPI with sql"}
 
-app.include_router(students.app)
+app.include_router(students.router)
