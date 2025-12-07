@@ -1,75 +1,24 @@
+from typing import List
+
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+
+from database import get_db
+from schemas import StudentCreate, StudentResponse
+from models import Student
+
+app = APIRouter(
+    prefix="",
+    tags=["students"],
+)
+
+
 # CRUD operations / HTTP requests
 
 # Create - POST
 # Read - GET
 # Update - PUT
 # Delete - DELETE
-
-from fastapi import FastAPI, HTTPException, Depends
-from sqlalchemy import create_engine, Column, Integer, String
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, Session
-
-from pydantic import BaseModel
-from typing import Optional, List
-
-# creating an fastapi obj
-app = FastAPI(title="Integration with sql")
-
-# Database setup
-engine = create_engine("sqlite:///students.db", connect_args={"check_same_thread":False})
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
-
-
-
-
-# Database Model
-class Student(Base):
-    __tablename__ = "students"
-
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, nullable=False)
-    dept = Column(String, nullable=False)
-    email = Column(String, nullable=False, unique=True)
-    year = Column(Integer, nullable=False)
-
-# Now after creating a model (basically an sql table) ... our model need to speak to the engine
-Base.metadata.create_all(engine)
-
-
-# Pydantic Models (Dataclass)
-class StudentCreate(BaseModel):
-    name:str
-    dept:str
-    email:str
-    year:int
-
-class StudentResponse(BaseModel):
-    id:int
-    name:str
-    dept:str
-    email:str
-    year:int
-
-    class config:
-        from_attributes = True
-    
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-get_db()
-
-
-# Endpoints
-@app.get("/")
-def root():
-    return {"message": "FastAPI with sql"}
 
 # View existing students data
 @app.get("/students/{student_id}", response_model=StudentResponse)
