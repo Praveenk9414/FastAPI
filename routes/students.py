@@ -25,6 +25,7 @@ router = APIRouter(
 def get_all_students(db:Session = Depends(get_db)):
     return db.query(Student).all()
 
+
 # View existing students data
 @router.get("/{student_id}", response_model=StudentResponse)
 def get_student(student_id:int, db:Session = Depends(get_db)):
@@ -32,6 +33,7 @@ def get_student(student_id:int, db:Session = Depends(get_db)):
     if not stud:
         raise HTTPException(status_code=404, detail="Student not found!")
     return stud
+
 
 # Filter students record based on Year and Dept
 @router.get("/students/filter", response_model=List[StudentResponse])
@@ -54,6 +56,7 @@ def create_student(stud: StudentCreate, db:Session = Depends(get_db)):
     db.commit()
     db.refresh(new_stud)
     return new_stud
+
 
 # Update Students data
 @router.put("/{student_id}", response_model=StudentResponse)
